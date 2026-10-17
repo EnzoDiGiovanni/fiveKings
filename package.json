@@ -1,0 +1,19 @@
+{
+  "name": "cinq-rois",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@fontsource/alegreya": "^5.3.0",
+    "@fontsource/alegreya-sans": "^5.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.4",
+    "vitest": "^3.2.7"
+  }
+}

@@ -1,0 +1,919 @@
+/* Les 5 Rois — une table de jeu : feutrine bordeaux, cartes ivoire, laiton. */
+
+:root {
+  --felt: #6a2032;
+  --felt-deep: #3f0f1d;
+  --on-felt: #f8ecd8;
+  --on-felt-soft: #e0c4a8;
+  --card: #fdf7ec;
+  --card-sunk: #f4ead8;
+  --card-edge: #e6d6bb;
+  --ink: #2e1d16;
+  --ink-soft: #77594a;
+  --pip: #a3242f;
+  --brass: #dcaa45;
+  --brass-deep: #a8761f;
+  --brass-glow: #f6dc96;
+  --danger: #b3261e;
+  --shadow: 0 1px 0 var(--card-edge), 0 12px 28px rgb(25 4 10 / 0.38);
+
+  --display: 'Alegreya', 'Iowan Old Style', Georgia, serif;
+  --text: 'Alegreya Sans', system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --felt: #3a1019;
+    --felt-deep: #1b070c;
+    --on-felt: #f3e3cb;
+    --on-felt-soft: #c7a98d;
+    --card: #2d211b;
+    --card-sunk: #251a15;
+    --card-edge: #47352a;
+    --ink: #f4e6d0;
+    --ink-soft: #bea58e;
+    --pip: #ec8a80;
+    --brass-glow: #5a4416;
+    --danger: #ff9b8f;
+    --shadow: 0 1px 0 #00000055, 0 12px 28px rgb(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--felt-deep);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  color: var(--on-felt);
+  font: 500 18px/1.45 var(--text);
+  font-variant-numeric: lining-nums;
+  background:
+    radial-gradient(120% 70% at 50% -10%, var(--felt) 0%, var(--felt) 35%, var(--felt-deep) 100%) fixed;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.page {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: max(12px, env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--on-felt-soft);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* ---------- Surfaces ---------- */
+
+.paper {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Boutons ---------- */
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-big {
+  min-height: 64px;
+  font-size: 1.25rem;
+  margin-top: 16px;
+}
+
+.btn-gold {
+  background: linear-gradient(180deg, #f0c766, var(--brass) 55%, var(--brass-deep));
+  color: #3a2208;
+  box-shadow: inset 0 1px 0 #fff6, 0 6px 16px rgb(20 4 8 / 0.4);
+}
+
+.btn-gold:active {
+  transform: translateY(1px);
+}
+
+.btn-gold:disabled {
+  background: rgb(255 255 255 / 0.12);
+  color: var(--on-felt-soft);
+  box-shadow: none;
+  cursor: default;
+}
+
+.btn-light {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.btn-light:disabled {
+  opacity: 0.5;
+}
+
+.btn-quiet {
+  background: transparent;
+  color: var(--on-felt-soft);
+  margin-top: 8px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Jeton « donneur » en laiton */
+.dealer-chip {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f7d98a, var(--brass) 60%, var(--brass-deep));
+  color: #3a2208;
+  font: 800 0.95rem/1 var(--display);
+  box-shadow: inset 0 0 0 3px rgb(255 255 255 / 0.35), inset 0 0 0 4px rgb(58 34 8 / 0.25),
+    0 2px 4px rgb(0 0 0 / 0.3);
+}
+
+.dealer-chip.small {
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  vertical-align: -4px;
+  margin-left: 6px;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.35), 0 1px 2px rgb(0 0 0 / 0.3);
+}
+
+.warn,
+.error {
+  color: var(--brass-glow);
+  font-weight: 700;
+}
+
+.warn {
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* ---------- Accueil ---------- */
+
+.brand {
+  text-align: center;
+  padding: 28px 0 24px;
+}
+
+.brand h1 {
+  font-size: 3rem;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  margin: 6px 0 0;
+  color: var(--on-felt-soft);
+  font-size: 1.1rem;
+}
+
+.brand-cards {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+  height: 84px;
+}
+
+.brand-cards span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 80px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--pip);
+  font: 800 1.7rem var(--display);
+  box-shadow: var(--shadow);
+}
+
+.brand-cards span:nth-child(2) {
+  position: relative;
+  z-index: 1;
+  transform: translateY(-4px);
+}
+
+.brand-cards span:nth-child(1) {
+  transform: rotate(-12deg) translateY(6px);
+}
+
+.brand-cards span:nth-child(3) {
+  transform: rotate(12deg) translateY(6px);
+}
+
+.resume {
+  display: grid;
+  gap: 2px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  border-left: 8px solid var(--brass);
+}
+
+.resume-title {
+  font: 800 1.5rem var(--display);
+}
+
+.resume-players {
+  font-weight: 700;
+}
+
+.resume-status {
+  color: var(--ink-soft);
+}
+
+.history {
+  margin-top: 36px;
+}
+
+.history h2 {
+  font-size: 1.35rem;
+  margin-bottom: 12px;
+}
+
+.game-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.game-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 0;
+}
+
+.game-row + .game-row {
+  border-top: 1px solid var(--card-edge);
+}
+
+.game-link {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  padding: 14px 18px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.game-players {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-meta,
+.game-status {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.btn-delete {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-delete-ongoing {
+  display: block;
+  margin: 28px auto 0;
+  color: var(--on-felt-soft);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Création ---------- */
+
+.setup h1 {
+  font-size: 2.4rem;
+  margin-top: 4px;
+}
+
+.lead {
+  color: var(--on-felt-soft);
+  margin: 10px 0 20px;
+  max-width: 30em;
+}
+
+.add-form {
+  display: flex;
+  gap: 10px;
+}
+
+.add-form .btn {
+  width: auto;
+  flex: none;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1.15rem;
+  box-shadow: var(--shadow);
+}
+
+.field::placeholder {
+  color: var(--ink-soft);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--brass);
+}
+
+.error {
+  min-height: 1.45em;
+  margin: 10px 4px;
+}
+
+.seat-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+}
+
+.seat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+}
+
+.seat + .seat {
+  border-top: 1px solid var(--card-edge);
+}
+
+.seat-num {
+  flex: none;
+  width: 2rem;
+  font: 800 1.3rem var(--display);
+  color: var(--pip);
+}
+
+.seat-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.seat-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.seat-note .dealer-chip {
+  margin-left: 0;
+}
+
+.seat-actions {
+  display: flex;
+  flex: none;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.icon-btn:disabled {
+  opacity: 0.2;
+}
+
+.icon-remove {
+  color: var(--danger);
+  font-size: 1.1rem;
+}
+
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  padding: 8px 0 calc(12px + env(safe-area-inset-bottom));
+  margin-top: 12px;
+}
+
+/* ---------- Partie : avancement ---------- */
+
+.progress {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 20px;
+}
+
+.progress li {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  height: 32px;
+  border-radius: 6px;
+  font: 800 0.85rem var(--display);
+  color: var(--on-felt-soft);
+  background: rgb(255 255 255 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.progress li.is-done {
+  background: var(--brass);
+  color: #3a2208;
+  box-shadow: none;
+}
+
+.progress li.is-active {
+  background: var(--card);
+  color: var(--pip);
+  box-shadow: 0 0 0 2px var(--brass);
+  transform: translateY(-3px);
+}
+
+/* ---------- Partie : manche ---------- */
+
+.round-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* L'atout de la manche, dessiné comme une carte à jouer */
+.trump-card {
+  position: relative;
+  flex: none;
+  width: 96px;
+  height: 134px;
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--pip);
+  box-shadow: inset 0 0 0 5px var(--card), inset 0 0 0 6px var(--card-edge), var(--shadow);
+  transform: rotate(-5deg);
+}
+
+.trump-card .face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 3rem/1 var(--display);
+}
+
+.trump-card .corner {
+  position: absolute;
+  font: 800 1rem/1 var(--display);
+}
+
+.trump-card .tl {
+  top: 11px;
+  left: 12px;
+}
+
+.trump-card .br {
+  bottom: 11px;
+  right: 12px;
+  transform: rotate(180deg);
+}
+
+.trump-card.is-dealt {
+  animation: deal 520ms cubic-bezier(0.2, 0.8, 0.25, 1.15);
+}
+
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translate(60px, -40px) rotate(18deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-5deg);
+  }
+}
+
+.round-text h1 {
+  font-size: 2rem;
+}
+
+.round-text p {
+  margin: 4px 0 0;
+  color: var(--on-felt-soft);
+}
+
+.round-text .dealer-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--on-felt);
+  font-size: 1.1rem;
+}
+
+.note {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--brass-glow);
+  color: #3a2208;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .note {
+    color: var(--on-felt);
+  }
+}
+
+.paper-hint {
+  margin: 0;
+  padding: 14px 18px 4px;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.entries {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 6px;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'who input'
+    'out input';
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 12px 14px 12px 18px;
+}
+
+.entry + .entry {
+  border-top: 1px solid var(--card-edge);
+}
+
+.entry.is-dealer {
+  background: linear-gradient(90deg, rgb(220 170 69 / 0.18), transparent 70%);
+}
+
+.entry-who {
+  grid-area: who;
+  display: grid;
+  min-width: 0;
+}
+
+.entry-name {
+  font-weight: 700;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.entry-total {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.entry-total b {
+  color: var(--ink);
+}
+
+.btn-out {
+  grid-area: out;
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid var(--card-edge);
+  border-radius: 999px;
+  background: var(--card-sunk);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-out:active {
+  background: var(--brass);
+  border-color: var(--brass);
+}
+
+.entry-input {
+  grid-area: input;
+  width: 92px;
+  height: 72px;
+  border: 2px solid var(--card-edge);
+  border-radius: 14px;
+  background: var(--card-sunk);
+  color: var(--ink);
+  font: 700 2rem var(--text);
+  font-variant-numeric: lining-nums tabular-nums;
+  text-align: center;
+}
+
+.entry-input::placeholder {
+  color: var(--card-edge);
+}
+
+.entry-input:focus {
+  outline: none;
+  border-color: var(--brass);
+  background: var(--card);
+  box-shadow: 0 0 0 4px rgb(220 170 69 / 0.3);
+}
+
+.missing {
+  min-height: 1.45em;
+  margin: 14px 4px 0;
+  color: var(--on-felt-soft);
+  text-align: center;
+}
+
+.missing:empty {
+  display: none;
+}
+
+/* ---------- Fin de partie ---------- */
+
+.end {
+  text-align: center;
+}
+
+.end h1 {
+  font-size: 2.4rem;
+  padding-top: 8px;
+}
+
+.end-sub {
+  color: var(--on-felt-soft);
+  margin: 8px 0 20px;
+}
+
+.ranking {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  text-align: left;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+}
+
+.rank-row + .rank-row {
+  border-top: 1px solid var(--card-edge);
+}
+
+.rank-row.is-winner {
+  font-size: 1.2rem;
+}
+
+.rank-pos {
+  width: 2rem;
+  text-align: center;
+  font: 800 1.2rem var(--display);
+  color: var(--ink-soft);
+}
+
+.rank-name {
+  flex: 1;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.rank-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* ---------- Feuille de score ---------- */
+
+.sheet-section {
+  margin-top: 40px;
+}
+
+.sheet-section h2 {
+  font-size: 1.35rem;
+}
+
+.sheet-hint {
+  margin: 4px 0 12px;
+  color: var(--on-felt-soft);
+  font-size: 0.95rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.sheet {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.sheet th,
+.sheet td {
+  padding: 10px 6px;
+  text-align: center;
+  background: var(--card);
+}
+
+.sheet thead th {
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-bottom: 2px solid var(--card-edge);
+}
+
+.sheet thead th span {
+  display: block;
+  max-width: 5.5rem;
+  margin: 0 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 4.2rem;
+  padding-left: 14px;
+  text-align: left;
+  font: 800 1rem var(--display);
+  color: var(--pip);
+  border-right: 1px solid var(--card-edge);
+}
+
+.sheet thead th:first-child {
+  font: 700 0.9rem var(--text);
+  color: var(--ink-soft);
+}
+
+.sheet td {
+  position: relative;
+  min-width: 3rem;
+  font-size: 1.05rem;
+}
+
+.sheet tbody tr {
+  cursor: pointer;
+}
+
+.sheet tbody tr + tr > * {
+  border-top: 1px solid var(--card-edge);
+}
+
+.sheet tbody tr.is-active > * {
+  background: var(--brass-glow);
+}
+
+.sheet tbody tr.is-future {
+  cursor: default;
+}
+
+.sheet tbody tr.is-future th {
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
+
+/* Petit jeton laiton : qui distribue cette manche */
+.sheet td.is-dealer::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 1px var(--brass-deep);
+}
+
+.sheet tfoot th,
+.sheet tfoot td {
+  border-top: 2px solid var(--card-edge);
+  font-weight: 800;
+  font-size: 1.15rem;
+  padding: 12px 6px;
+}
+
+.sheet tfoot th:first-child {
+  color: var(--ink);
+}
+
+.sheet thead th.is-leader,
+.sheet tfoot td.is-leader {
+  background: var(--brass-glow);
+}
+
+.sheet thead th.is-leader span::before {
+  content: '👑 ';
+}
+
+.empty-state {
+  margin-top: 24px;
+  padding: 24px;
+  text-align: center;
+}
+
+.empty-state p {
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trump-card.is-dealt {
+    animation: none;
+  }
+}
